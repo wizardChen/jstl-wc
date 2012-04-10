@@ -1,0 +1,17 @@
+<html>
+<head>
+	<script src="http://code.jquery.com/jquery.min.js" type="text/javascript"></script>
+	<script src="resource/js/jnwc.js" type="text/javascript"></script>
+</head>
+<body>
+	<h2>@{=title}</h2>
+</body>
+</html>
+<script type="text/javascript">
+	$(function(){
+		var ctx = $('[type="text/wc-tmpl"]').html();
+		var ret = jnwc.render(ctx, {user:''});
+		alert(ret);
+		$('body').html(ret);
+	});
+</script>

@@ -1,0 +1,43 @@
+<html>
+<head>
+	<script src="http://code.jquery.com/jquery.min.js" type="text/javascript"></script>
+	<script src="resource/js/jstl-wc.js" type="text/javascript"></script>
+	<link rel="stylesheet" type="text/css" href="resource/css/custom.css" media="screen" />
+</head>
+<body>
+	<h1>@{=request.title}</h1>
+	<h2>wc:code</h2>
+	<div>
+		<ul>
+			<wc:code if="@{request.users}" for="@{user}" id="hasUsers">
+				<li><a href="@{=$item.userId}">@{=$item.userName}</a></li>
+			</wc:code>
+			<wc:code else="#hasUsers">
+				<li>none user.</li>
+			</wc:code>
+		</ul>
+	</div>
+	<script type="text/wc-tmpl">
+	<h2>wc:ft</h2>
+	<div>
+		<ul>
+			<wc:ft if="#{'undefined' !== typeof(users)}" for="#{users}" id="hasUsers">
+				<li><a href="#{=$item.userId}">#{=$item.userName}</a></li>
+			</wc:ft>
+			<wc:ft else="#hasUsers" for="#{10}">
+				<li>#{=$i}</li>
+			</wc:ft>
+		</ul>
+	</div>
+	</script>
+	<div name="wc-ft"></div>
+</body>
+</html>
+<script type="text/javascript">
+	$(function(){
+		var ctx = $('[type="text/wc-tmpl"]').html();
+		var ret = jstlWc.render(ctx, {users:[{userId:'12580110', userName:'wizardChen'}]});
+		//var ret = jstlWc.render(ctx, {users:null});
+		$('[name="wc-ft"]').html(ret);
+	});
+</script>
