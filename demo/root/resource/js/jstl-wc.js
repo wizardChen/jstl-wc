@@ -24,7 +24,6 @@ var jstlWc = typeof(exports) == 'undefined' ? {} : exports;
 		var str = str || '';
 		var l = l == undefined ? settings.cL : l;
 		var r = r == undefined ? settings.cR : r;
-		var ret = '';
 		var iL = str.indexOf(l);
 		var iR = str.indexOf(r);
 		var iN = str.indexOf(l, iL + l.length);
@@ -55,15 +54,15 @@ var jstlWc = typeof(exports) == 'undefined' ? {} : exports;
 	 */
 	var extend = function() {
 		var args = arguments;
-		var deep = false;
+		var isDeep = false;
 		var target = args[0];
 		if( typeof(args[0]) == 'boolean' ) {
-			deep = args[0];
+			isDeep = args[0];
 			target = args[1];
 		}
-		for(var i=(target == args[0] ? 1 : 2); i<args.length; i++) {
+		for(var i=(target === args[0] ? 1 : 2); i<args.length; i++) {
 			var src = args[i];
-			for(var attr in src) {
+			for(var attr in args[i]) {
 				target[attr] = src[attr];
 			}
 		}
@@ -74,7 +73,15 @@ var jstlWc = typeof(exports) == 'undefined' ? {} : exports;
 		return compile(code, options).call();
 	}
 	var compile = function(code, options) {
-		var ctx = extend(true, {}, options, {condition : {}});
+		var oc = [];
+		var ctx = extend(true, {}, options, {
+			 $pageContext	: {}
+			,$condition		: {}
+			,$out			: {
+				 print	: function(str) {oc.push(str);}
+				,clear	: function() {var ret = oc;oc = [];return ret;}
+			}
+		});
 		var opts = extend(true, {}, settings, options);
 		return function(){
 			return parse.call(ctx, opts, code);
@@ -87,12 +94,12 @@ var jstlWc = typeof(exports) == 'undefined' ? {} : exports;
 			var ic = code.indexOf(opts.cL);
 			var is = code.indexOf(opts.sT);
 			if( ic != -1 && (is == -1 || ic < is) ) {
-				var pair = compileCode.call(ctx, opts, code.substr(ic));
+				var pair = parseCode.call(ctx, opts, code.substr(ic));
 				oc += code.substring(0, ic) + pair.value;
 				code = code.substring(ic + pair.length);
 			}
 			if( is != -1 && (ic == -1 || is < ic) ) {
-				var pair = compileScript.call(ctx, opts, code.substr(is));
+				var pair = parseScript.call(ctx, opts, code.substr(is));
 				oc += code.substring(0, is) + pair.value;
 				code = code.substring(is + pair.length + opts.sT.length - opts.sL.length);
 			}
@@ -103,7 +110,7 @@ var jstlWc = typeof(exports) == 'undefined' ? {} : exports;
 		}
 		return oc;
 	}
-	var compileCode = function(opts, code) {
+	var parseCode = function(opts, code) {
 		var oc = '';
 		var ctx = this;
 		var pair = getPairs(code, opts.cL, opts.cR);
@@ -115,10 +122,10 @@ var jstlWc = typeof(exports) == 'undefined' ? {} : exports;
 			var $code = (pair.string.match(opts.re.$code) || [])[2];
 			if( $code ) {
 				if( $if ) {
-					$if = ctx.condition[$id] = _eval('return (!!' + $if + ')', ctx);
+					$if = ctx.$condition[$id] = _eval('return (!!' + $if + ')', ctx);
 				}
 				if( $else ) {
-					$else = !ctx.condition[$else];
+					$else = !ctx.$condition[$else];
 				}
 				var judge = $if !== undefined ? $if : ($else !== undefined ? $else : true);
 				if( judge ) {
@@ -155,7 +162,7 @@ var jstlWc = typeof(exports) == 'undefined' ? {} : exports;
 		}
 		return extend(pair, {value:oc});
 	}
-	var compileScript = function(opts, code) {
+	var parseScript = function(opts, code) {
 		var oc = '';
 		var ctx = this;
 		var pair = {length:0};
@@ -171,9 +178,7 @@ var jstlWc = typeof(exports) == 'undefined' ? {} : exports;
 				$code = 'return (' + $code.substr(1) + ')';
 			}
 			var ret = _eval($code, ctx);
-			if( ret !== undefined ) {
-				oc += ret;
-			}
+			oc += ctx.$out.clear().join('') + (ret !== undefined ? ret : '');
 		}
 		return extend(pair, {value:oc});
 	};
