@@ -16,8 +16,8 @@ var jstlWc = typeof(exports) == 'undefined' ? {} : exports;
 		}
 	};
 	/**
-	 * »ñÈ¡³É¶Ô³öÏÖµÄ·ûºÅÖĞ¼äµÄÄÚÈİ
-	 * exp£º
+	 * è·å–æˆå¯¹å‡ºç°çš„ç¬¦å·ä¸­é—´çš„å†…å®¹
+	 * expï¼š
 	 *	getPairs('(i+(i++))', '(',')') == i+(i++)
 	 */
 	var getPairs = function(str, l, r) {
@@ -50,7 +50,7 @@ var jstlWc = typeof(exports) == 'undefined' ? {} : exports;
 		return ret;
 	}
 	/**
-	 * Î´Íê³É...
+	 * æœªå®Œæˆ...
 	 */
 	var extend = function() {
 		var args = arguments;
@@ -115,12 +115,14 @@ var jstlWc = typeof(exports) == 'undefined' ? {} : exports;
 		var ctx = this;
 		var pair = getPairs(code, opts.cL, opts.cR);
 		if( pair.length ) {
-			var $id = (pair.string.match(opts.re.$id) || [])[1] || ('#'+(new Date().getTime() + parseInt(Math.random()*100)));
-			var $if = (pair.string.match(opts.re.$if) || [])[1];
-			var $for = (pair.string.match(opts.re.$for) || [])[1];
-			var $else = (pair.string.match(opts.re.$else) || [])[1];
 			var $code = (pair.string.match(opts.re.$code) || [])[2];
-			if( $code ) {
+			var $expr = (pair.string.match(opts.re.$code) || [])[1];
+			if( $expr && $code ) {
+				var $id = ($expr.match(opts.re.$id) || [])[1] || ('#'+(new Date().getTime() + parseInt(Math.random()*100)));
+				var $if = ($expr.match(opts.re.$if) || [])[1];
+				var $for = ($expr.match(opts.re.$for) || [])[1];
+				var $else = ($expr.match(opts.re.$else) || [])[1];
+
 				if( $if ) {
 					$if = ctx.$condition[$id] = _eval('return (!!' + $if + ')', ctx);
 				}
@@ -146,7 +148,7 @@ var jstlWc = typeof(exports) == 'undefined' ? {} : exports;
 								oc += parse.call(ctx, opts, $code);
 							}
 						}
-						else/* if( typeof($for) == 'array' ) */{
+						else if( undefined != $for /*typeof($for) == 'array'*/ ) {
 							for(var i=0; i<$for.length; i++) {
 								ctx['$i'] = i;
 								ctx['$item'] = $for[i];
